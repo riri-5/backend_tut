@@ -16,3 +16,5 @@ class apiResponse
        these are all server status codes
     */ 
 }
+
+export default apiResponse;
