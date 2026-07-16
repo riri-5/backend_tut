@@ -16,11 +16,12 @@ const registerUser = asyncHandler(async (req, res) =>
         // check response n if successful user creation
         // return res
 
-        const {fullName, email, username, password} = req.body;
-        console.log("email: ", email);
+        const {fullname, email, username, password} = req.body;
+        // console.log(req.body);
+        // console.log("email: ", email);
 
         if(
-            [fullName, email, username, password].some((field) => field?.trim() === "")
+            [fullname, email, username, password].some((field) => field?.trim() === "")
         ) {
             throw new apiError(400, "All fields are required");
         }
@@ -30,16 +31,16 @@ const registerUser = asyncHandler(async (req, res) =>
         //     throw new apiError(400, "fullname required");
         // }
 
-        const existedUser = User.findOne({
+        const existedUser = await User.findOne({
             $or: [{username}, {email}]
         });
 
         if(existedUser) {
-            throw apiError(409, "User already exists");
+            throw new apiError(409, "User already exists");
         }
 
         const avatarLocalPath = req.files?.avatar[0]?.path;
-        const coverImageLocalPath = req.files?.coverIMage[0]?.path;
+        const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
         if(!avatarLocalPath){
             throw new apiError(400, "Avatar required");
@@ -53,8 +54,8 @@ const registerUser = asyncHandler(async (req, res) =>
         }
 
         const user = await User.create({
-            fullName, avatar: avatar.url, coverImage: coverImage?.url || "", email, 
-            password, username.toLowerCase()
+            fullname, avatar: avatar.url, coverImage: coverImage?.url || "", email, 
+            password, username: username.toLowerCase()
         });
 
         const createdUser = await User.findById(user._id).select(
@@ -66,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) =>
         }
 
         return res.status(201).json(
-            new apiResponse(200, createdUser, "User registered successfully");
+            new apiResponse(200, createdUser, "User registered successfully")
         )
 
     });
