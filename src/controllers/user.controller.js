@@ -1,7 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import apiError from "../utils/apiError.js";
 import {User} from "../models/user.model.js"
-import uploadOnCloudinary from "../utils/cloudinary..js"
+import uploadOnCloudinary from "../utils/cloudinary.js"
 import apiResponse from "../utils/apiResponse.js"
 
 const generateAccessAndRefreshToken = async(userId) => 
@@ -21,7 +21,9 @@ const generateAccessAndRefreshToken = async(userId) =>
 
     catch(error)
     {
-        throw new apiError(500, "Something went wrong while generating access and refresh token");
+        //throw new apiError(500, "Something went wrong while generating access and refresh token");
+        console.log(error);
+        throw error;
     }
 };
 
@@ -103,8 +105,9 @@ const loginUser = asyncHandler(async (req, res) => {
     // send cookie
 
     const {email, username, password} = req.body;
+    console.log(email);
     
-    if(!username || !email)
+    if(!(username || email))
     {
         throw new apiError(400, "username or email is required");
     }
@@ -118,8 +121,8 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new apiError(404, "User does not exist");
     }
 
-    const isPassowrdValid = await user.isPasswordCorrect(password);
-    if(!isPassowrdValid)
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if(!isPasswordValid)
     {
         throw new apiError(401, "Password incorrect");
     }
@@ -139,12 +142,12 @@ const loginUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken",refreshToken, options)
     .json
-    {
+    (
         new apiResponse(200, 
         {
             user: loggedInUser, accessToken, refreshToken
-        }, "User logged in successfully");
-    }
+        }, "User logged in successfully")
+    )
 });
 
 const logoutUser = asyncHandler(async(req, res) => 
